@@ -19,7 +19,11 @@ It calculates the **Body Mass Index (BMI)** and determines the appropriate daily
 - HTML5, CSS3
 - VS Code for development
 
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Flask](https://img.shields.io/badge/Flask-WebApp-green)
+![Status](https://img.shields.io/badge/Status-Active-success)
+
 ## 🚀 How to Run
 1. Clone the repository  
    ```bash
-   git clone https://github.com/yourusername/ai-diet-chatbot.git
+   git clone https://github.com/aayush-hub1/ai-diet-chatbot.git
