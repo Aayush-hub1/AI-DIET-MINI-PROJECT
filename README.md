@@ -22,4 +22,4 @@ It calculates the **Body Mass Index (BMI)** and determines the appropriate daily
 ## 🚀 How to Run
 1. Clone the repository  
    ```bash
-   git clone https://github.com/yourusername/ai-diet-chatbot.git
+   git clone https://github.com/Aayush-hub1/ai-diet-chatbot.git
