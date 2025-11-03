@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI Diet Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#111214;
+    --glass: rgba(255,255,255,0.06);
+    --glass-2: rgba(255,255,255,0.08);
+    --accent: #2bd875;
+    --muted: rgba(255,255,255,0.14);
+  }
+
+  html,body{height:100%;margin:0;background:var(--bg);font-family:"Poppins",sans-serif;color:#fff;}
+
+  .bg-wrap{
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    pointer-events:none; z-index:0;
+  }
+
+  .bg-phrase{ display:flex; gap:64px; }
+  .bg-word{ font-size:140px; font-weight:800; letter-spacing:10px; color:rgba(255,255,255,0.14); filter:blur(2px);}
+  .bg-word.center{ color:rgba(255,255,255,0.20); filter:blur(1px); }
+
+  .stage{
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+    z-index:2; padding:40px; box-sizing:border-box;
+  }
+
+  .chat-container{
+    width:700px; max-width:92vw; height:780px; max-height:92vh;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border-radius:18px; border:1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 35px 80px rgba(0,0,0,0.7);
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+
+  .chat-header{ padding:20px 26px; border-bottom:1px solid rgba(255,255,255,0.05);}
+  .brand .ai{ font-weight:800; color:var(--accent); font-size:18px; }
+  .brand .diet{ font-weight:600; font-size:16px; }
+  .brand .assistant{ font-size:13px; opacity:0.6; }
+
+  .messages{ flex:1; padding:26px; overflow:auto; display:flex; flex-direction:column; gap:12px; }
+  .message{ max-width:78%; padding:12px 16px; border-radius:14px; font-size:14px; }
+  .message.bot{ background:#fff; color:#111; align-self:flex-start; }
+  .message.user{ background:var(--accent); color:#fff; align-self:flex-end; }
+
+  .input-row{ display:flex; gap:12px; padding:14px 18px; border-top:1px solid rgba(255,255,255,0.05);}
+  .input-row input{
+    flex:1; padding:12px 14px; border-radius:10px;
+    border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.3); color:#eee;
+  }
+  .input-row button{
+    padding:12px 18px; border-radius:10px; border:none;
+    background:var(--accent); color:#06260b; font-weight:700; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-wrap"><div class="bg-phrase">
+  <div class="bg-word">AI</div>
+  <div class="bg-word center">DIET</div>
+  <div class="bg-word">ASSISTANT</div>
+</div></div>
+
+<div class="stage">
+  <div class="chat-container">
+    <div class="chat-header">
+      <div class="brand">
+        <div class="ai">AI</div>
+        <div class="diet">Diet</div>
+        <div class="assistant">Assistant</div>
+      </div>
+    </div>
+
+    <div class="messages" id="chat">
+      <div class="message bot">Hi! What’s your name?</div>
+    </div>
+
+    <div class="input-row">
+      <input id="userInput" type="text" placeholder="Type here..." autocomplete="off" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let step = 0;
+  const userData = {};
+  const questions = [
+    "Nice to meet you! How old are you?",
+    "What is your gender? (male/female)",
+    "What is your weight in kg?",
+    "What is your height in cm?",
+    "What is your activity level? (low/medium/high)"
+  ];
+
+  function addMessage(text, cls='bot') {
+    const chat = document.getElementById('chat');
+    chat.insertAdjacentHTML('beforeend', `<div class="message ${cls}">${text}</div>`);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('userInput');
+    const msg = input.value.trim();
+    if(!msg) return;
+    addMessage(msg, 'user');
+    input.value = '';
+    handleUser(msg);
+  }
+
+  function handleUser(msg) {
+    const keys = ["name", "age", "gender", "weight", "height", "activity"];
+
+    if(step < keys.length) {
+      userData[keys[step]] = msg.toLowerCase();
+      step++;
+      if(step < keys.length) addMessage(questions[step-1]);
+      else requestMealPlan(false);
+      return;
+    }
+
+    if(msg.toLowerCase() === "more") requestMealPlan(true);
+  }
+
+  function requestMealPlan(more) {
+    fetch('/chat', {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({user_data: userData, more})
+    })
+    .then(r => r.json())
+    .then(data => {
+      if(data.error) return addMessage("Error: " + data.error);
+
+      const meals = data.plan.map(m => `${m.name} (${m.protein})`).join("\n");
+      addMessage(`${userData.name}, here is your personalized meal plan:\n\nBMI: ${data.bmi} (${data.condition})\nCalories Target: ${data.calories}\n\n${meals}`);
+      addMessage("Type 'more' to get alternate meal options.");
+    })
+    .catch(() => addMessage("Server error. Check backend."));
+  }
+
+  document.getElementById('userInput').addEventListener('keydown', e => {
+    if(e.key === 'Enter') sendMessage();
+  });
+</script>
+
+</body>
+</html>
