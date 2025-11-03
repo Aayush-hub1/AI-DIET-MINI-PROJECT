@@ -11,7 +11,7 @@ It calculates the **Body Mass Index (BMI)** and determines the appropriate daily
 - Calculates **BMI** and **calorie needs**
 - Recommends meal plans from predefined data
 - Clean and user-friendly web interface
-- 100% Python — no JavaScript used
+
 
 ## 🧰 Technologies Used
 - Python 3.12
